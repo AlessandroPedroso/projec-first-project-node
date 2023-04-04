@@ -1,11 +1,13 @@
 const { request, response } = require('express');
 const express = require('express');
+const cors = require('cors');
 const uuid = require('uuid');
 
 const port = 3000;
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const users = []
 
@@ -42,12 +44,25 @@ app.get('/users', (request, response) => {
 
 app.post('/users', (request, response) => {
 
-        const { name, age } = request.body
+        try {
 
-        const user = { id: uuid.v4(), name: name, age: age };
-        users.push(user);
-        
-        return response.status(201).json(user)
+                const { name, age } = request.body;
+                const ageInt = parseInt(age);
+                if(ageInt < 18) throw new Error('Idade precisa ser maior ou igual a 18 anos');     
+                
+                const user = { id: uuid.v4(), name: name, age: ageInt };
+
+                users.push(user);
+
+                return response.status(201).json(user);
+
+        } catch (error) {
+
+                return response.status(400).json({erro: error.message});
+        } finally{
+                console.log('terminou tudo')
+        }
+
 })
 
 app.put('/users/:id', checkUserId, (request, response) => {
@@ -99,5 +114,5 @@ app.delete('/users/:id', checkUserId, (request, response) => {
 
 
 app.listen(port, () => {
-        console.log("🫶🎆Server strated on port 3000");
+        console.log("🫶🎆Server strated on port 3001");
 });
